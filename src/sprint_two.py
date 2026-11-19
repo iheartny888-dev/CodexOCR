@@ -5,6 +5,11 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import time
 
+epochs = 4
+convpool = 1
+channels = 28
+fc = 3
+
 train_data = datasets.EMNIST(root="./datasets", split="letters", train=True, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
 test_data = datasets.EMNIST(root="./datasets", split="letters", train=False, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
 train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
@@ -13,21 +18,36 @@ test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
 class Model(nn.Module) :
     def __init__(self) :
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 6, 3, 1)
-        self.conv2 = nn.Conv2d(6, 16, 3, 1)
-        self.fc1 = nn.Linear(400, 120)
-        self.fc2 = nn.Linear(120, 80)
-        self.fc3 = nn.Linear(80, 26)
+
+        convpool_layers = []
+        in_channels = 1
+        dim = 28
+
+        for i in range(convpool) :
+            out_channels = (channels // convpool) * (i + 1)
+            convpool_layers.extend([nn.Conv2d(in_channels, out_channels, 3, 1), nn.ReLU(), nn.MaxPool2d(2, 2)])
+            dim = (dim - 2) // 2
+            in_channels = out_channels
+
+        self.convpool = nn.Sequential(*convpool_layers)
+        flattened = dim * dim * in_channels
+
+        fc_layers = []
+        in_features = flattened
+
+        for i in range(fc - 1) :
+            out_features = max(1, int(flattened * (2/3) ** (i + 1)))
+            fc_layers.extend([nn.Linear(in_features, out_features), nn.ReLU()])
+            in_features = out_features
+
+        fc_layers.append(nn.Linear(in_features, 26))
+        self.fc = nn.Sequential(*fc_layers)
 
     def forward(self, x) :
-        x = F.relu(self.conv1(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = F.relu(self.conv2(x))
-        x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 400)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.convpool(x)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
+
         return F.log_softmax(x, dim=1)
 
 torch.manual_seed(14)
@@ -38,7 +58,6 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 start_time = time.time()
 
-epochs = 1
 train_loss = []
 test_loss = []
 train_correct = []
