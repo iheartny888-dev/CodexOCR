@@ -99,7 +99,7 @@ for i in range(epochs) :
 
 current_time = time.time()
 total_time = current_time - start_time
-print(f'Training time: {total_time/60} minutes')
+print(f'Time: {total_time/60} minutes')
 
 test_accuracy = (test_correct[-1].item() / len(test_data)) * 100
-print(f'Test Accuracy: {test_accuracy:.2f}%')
+print(f'Accuracy: {test_accuracy:.2f}%')
