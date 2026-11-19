@@ -3,15 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from torchvision.utils import make_grid
-import numpy as np
-import pandas as pd
-from sklearn.metrics import confusion_matrix
-import matplotlib.pyplot as plot
 import time
 
-train_data = datasets.EMNIST(root="./datasets/EMNIST", split="letters", train=True, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
-test_data = datasets.EMNIST(root="./datasets/EMNIST", split="letters", train=False, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
+train_data = datasets.EMNIST(root="./datasets", split="letters", train=True, download=False, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
+test_data = datasets.EMNIST(root="./datasets", split="letters", train=False, download=False, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
 train_loader = DataLoader(train_data, batch_size=10, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=10, shuffle=False)
 
@@ -33,13 +28,13 @@ class Model(nn.Module) :
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
-        return F.log_softmax(X, dim=1)
+        return F.log_softmax(x, dim=1)
 
 torch.manual_seed(14)
 model = Model()
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 start_time = time.time()
 
@@ -86,3 +81,6 @@ for i in range(epochs) :
 current_time = time.time()
 total_time = current_time - start_time
 print(f'Training time: {total_time/60} minutes')
+
+test_accuracy = (test_correct[-1].item() / len(test_data)) * 100
+print(f'Test Accuracy: {test_accuracy:.2f}%')
