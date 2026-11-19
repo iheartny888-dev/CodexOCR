@@ -5,10 +5,10 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import time
 
-train_data = datasets.EMNIST(root="./datasets", split="letters", train=True, download=False, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
-test_data = datasets.EMNIST(root="./datasets", split="letters", train=False, download=False, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
-train_loader = DataLoader(train_data, batch_size=10, shuffle=True)
-test_loader = DataLoader(test_data, batch_size=10, shuffle=False)
+train_data = datasets.EMNIST(root="./datasets", split="letters", train=True, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
+test_data = datasets.EMNIST(root="./datasets", split="letters", train=False, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
+train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
+test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
 
 class Model(nn.Module) :
     def __init__(self) :
@@ -38,7 +38,7 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 start_time = time.time()
 
-epochs = 4
+epochs = 1
 train_loss = []
 test_loss = []
 train_correct = []
@@ -61,7 +61,7 @@ for i in range(epochs) :
         loss.backward()
         optimizer.step()
 
-        if b % 500 == 0 :
+        if b % 320 == 0 :
             print(f'Epoch: {i} Batch: {b} Loss: {loss.item()}')
 
     train_loss.append(loss)
