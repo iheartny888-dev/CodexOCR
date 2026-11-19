@@ -5,9 +5,9 @@ from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 import time
 
-epochs = 4
-convpool = 1
-channels = 28
+epochs = 7
+convpool = 2
+channels = 32
 fc = 3
 
 train_data = datasets.EMNIST(root="./datasets", split="letters", train=True, download=True, transform=transforms.ToTensor(), target_transform=lambda y: y - 1)
@@ -80,8 +80,8 @@ for i in range(epochs) :
         loss.backward()
         optimizer.step()
 
-        if b % 320 == 0 :
-            print(f'Epoch: {i} Batch: {b} Loss: {loss.item()}')
+        if b % 500 == 0 :
+            print(f'Epoch: {i + 1} Batch: {b} Loss: {loss.item()}')
 
     train_loss.append(loss)
     train_correct.append(tr_c)
